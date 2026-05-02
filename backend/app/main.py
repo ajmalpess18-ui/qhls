@@ -64,6 +64,34 @@ app.include_router(faculty.router)
 app.include_router(student.router)
 
 
-@app.get("/")
-def root():
-    return {"message": "QHLS API is running", "docs": "/docs"}
+# Serve React Frontend Build
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+
+frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/dist"))
+
+if os.path.exists(frontend_dist):
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+    @app.get("/{catchall:path}")
+    def serve_react_app(catchall: str):
+        # Prevent catching API/System routes
+        if catchall.startswith("uploads/") or catchall.startswith("api/") or catchall == "docs" or catchall == "openapi.json":
+            raise HTTPException(status_code=404, detail="Not Found")
+        
+        index_path = os.path.join(frontend_dist, "index.html")
+        file_path = os.path.join(frontend_dist, catchall)
+        
+        # Serve static files if they exist (e.g. vite.svg, robots.txt)
+        if os.path.exists(file_path) and os.path.isfile(file_path):
+            return FileResponse(file_path)
+            
+        # Fallback to index.html for SPA routing
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+            
+        return {"message": "Frontend build not found at " + frontend_dist}
+else:
+    @app.get("/")
+    def root():
+        return {"message": "QHLS API is running (Frontend not built)", "docs": "/docs"}
