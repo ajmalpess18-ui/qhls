@@ -91,6 +91,29 @@ def review_submission(
     return {"message": f"Submission {data.status}"}
 
 
+@router.get("/units/{unit_id}/students")
+def get_unit_students(unit_id: int, db: Session = Depends(get_db), current=Depends(get_state)):
+    unit = db.query(Unit).filter(Unit.id == unit_id).first()
+    if not unit:
+        raise HTTPException(status_code=404, detail="Unit not found")
+    zone = db.query(Zone).filter(Zone.id == unit.zone_id).first()
+    district = db.query(District).filter(District.id == zone.district_id).first()
+    if district.state_id != current.state_id:
+        raise HTTPException(status_code=403, detail="Unit not in your state")
+    
+    students = db.query(Student).filter(Student.unit_id == unit_id).all()
+    return [
+        {
+            "id": s.id,
+            "name": s.user.name,
+            "reg_number": s.reg_number,
+            "center": s.center.name if s.center else "",
+            "class_name": s.class_name
+        }
+        for s in students
+    ]
+
+
 # ── Results ────────────────────────────────────────────────────────────────────
 @router.post("/results/manual")
 def add_result_manual(data: ResultCreate, db: Session = Depends(get_db), current=Depends(get_state)):

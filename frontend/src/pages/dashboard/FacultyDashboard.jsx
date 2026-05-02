@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Building2, Users, Phone, Mail } from 'lucide-react';
-
+import { Building2, Users, Phone, Mail, Menu } from 'lucide-react';
 export default function FacultyDashboard() {
   const { user }  = useAuth();
   const [tab, setTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [centers, setCenters] = useState([]);
 
   useEffect(() => { loadCenters(); }, []);
@@ -18,10 +18,16 @@ export default function FacultyDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab === 'dashboard' ? 'Dashboard' : 'My Center'}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab === 'dashboard' ? 'Dashboard' : 'My Center'}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">

@@ -44,7 +44,7 @@ def delete_unit(unit_id: int, db: Session = Depends(get_db), current=Depends(get
     return {"message": "Unit deleted"}
 
 
-@router.get("/units")
+@router.get("/units", response_model=list[UnitOut])
 def list_units(db: Session = Depends(get_db), current=Depends(get_zone)):
     return db.query(Unit).filter(Unit.zone_id == current.zone_id).all()
 
@@ -71,7 +71,8 @@ def create_unit_user(data: UserCreate, db: Session = Depends(get_db), current=De
     user = User(
         name=data.name, email=data.email,
         hashed_password=hash_password(data.password),
-        role="unit", zone_id=current.zone_id,
+        role="unit", district_id=current.district_id, 
+        zone_id=current.zone_id,
         unit_id=data.unit_id,
     )
     db.add(user)

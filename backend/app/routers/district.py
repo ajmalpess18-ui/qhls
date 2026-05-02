@@ -9,7 +9,7 @@ from app.models.center import Center
 from app.models.student import Student
 from app.models.faculty import Faculty
 from app.models.submission import CenterSubmission
-from app.schemas.schemas import ZoneCreate, ZoneOut, UserCreate, UserOut
+from app.schemas.schemas import ZoneCreate, ZoneOut, UnitOut, UserCreate, UserOut
 
 router = APIRouter(prefix="/district", tags=["District"])
 
@@ -44,12 +44,12 @@ def delete_zone(zone_id: int, db: Session = Depends(get_db), current=Depends(get
     return {"message": "Zone deleted"}
 
 
-@router.get("/zones")
+@router.get("/zones", response_model=list[ZoneOut])
 def list_zones(db: Session = Depends(get_db), current=Depends(get_district)):
     return db.query(Zone).filter(Zone.district_id == current.district_id).all()
 
 
-@router.get("/units")
+@router.get("/units", response_model=list[UnitOut])
 def list_units(db: Session = Depends(get_db), current=Depends(get_district)):
     zones = db.query(Zone).filter(Zone.district_id == current.district_id).all()
     zone_ids = [z.id for z in zones]

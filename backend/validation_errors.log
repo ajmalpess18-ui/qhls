@@ -70,3 +70,550 @@ Validation error on POST http://localhost:8000/zone/users:
 Body:
 {"name":"new12","email":"new@12","password":"123","role":"unit","unit_id":1}
 ---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on PUT http://localhost:8000/district/zones/undefined:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "path",
+      "zone_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": "undefined"
+  }
+]
+Body:
+{"name":"iritty"}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/admin/users:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": ""
+  }
+]
+Body:
+{"email":"state@qhls.com","password":"state@123","role":"state","district_id":"","district_name":"","district_code":"","name":"state"}
+---
+Validation error on POST http://localhost:8000/admin/users:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": ""
+  }
+]
+Body:
+{"email":"state@qhls.com","password":"123","role":"state","district_id":"","district_name":"","district_code":"","name":"state"}
+---
+Validation error on PUT http://localhost:8000/district/zones/undefined:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "path",
+      "zone_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": "undefined"
+  }
+]
+Body:
+{"name":"iritty"}
+---
+Validation error on PUT http://localhost:8000/district/zones/undefined:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "path",
+      "zone_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": "undefined"
+  }
+]
+Body:
+{"name":"iritty"}
+---
+Validation error on POST http://localhost:8000/unit/centers:
+[
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "ULIKKAL",
+      "facility_type": "mosque",
+      "place": "koomnathode",
+      "post": "670706",
+      "pin": "670706",
+      "local_body_type": "Panchayat",
+      "state_name": "kerala",
+      "local_body_name": "payam",
+      "phone_office": "1234567890",
+      "email": "ajmalpess18@gmail.com",
+      "latitude": 4,
+      "longitude": 3,
+      "class_date": "2026-05-07",
+      "class_time": "10:43",
+      "faculty_name": "me",
+      "faculty_number": "1234567890",
+      "coordinator_name": "sdve",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "nfe_convener_name": "etg",
+      "convener_name": "eg"
+    }
+  },
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "zone_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "ULIKKAL",
+      "facility_type": "mosque",
+      "place": "koomnathode",
+      "post": "670706",
+      "pin": "670706",
+      "local_body_type": "Panchayat",
+      "state_name": "kerala",
+      "local_body_name": "payam",
+      "phone_office": "1234567890",
+      "email": "ajmalpess18@gmail.com",
+      "latitude": 4,
+      "longitude": 3,
+      "class_date": "2026-05-07",
+      "class_time": "10:43",
+      "faculty_name": "me",
+      "faculty_number": "1234567890",
+      "coordinator_name": "sdve",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "nfe_convener_name": "etg",
+      "convener_name": "eg"
+    }
+  },
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "unit_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "ULIKKAL",
+      "facility_type": "mosque",
+      "place": "koomnathode",
+      "post": "670706",
+      "pin": "670706",
+      "local_body_type": "Panchayat",
+      "state_name": "kerala",
+      "local_body_name": "payam",
+      "phone_office": "1234567890",
+      "email": "ajmalpess18@gmail.com",
+      "latitude": 4,
+      "longitude": 3,
+      "class_date": "2026-05-07",
+      "class_time": "10:43",
+      "faculty_name": "me",
+      "faculty_number": "1234567890",
+      "coordinator_name": "sdve",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "nfe_convener_name": "etg",
+      "convener_name": "eg"
+    }
+  }
+]
+Body:
+{"country":"India","name":"ULIKKAL","facility_type":"mosque","place":"koomnathode","post":"670706","pin":"670706","local_body_type":"Panchayat","state_name":"kerala","local_body_name":"payam","phone_office":"1234567890","email":"ajmalpess18@gmail.com","latitude":4,"longitude":3,"class_date":"2026-05-07","class_time":"10:43","faculty_name":"me","faculty_number":"1234567890","coordinator_name":"sdve","coordinator_number":"1234567890","convener_number":"1234567890","nfe_convener_number":"1234567890","nfe_convener_name":"etg","convener_name":"eg"}
+---
+Validation error on POST http://localhost:8000/unit/centers:
+[
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "AAJM",
+      "place": "gwerewg",
+      "post": "regtr",
+      "pin": "43",
+      "state_name": "errg",
+      "local_body_type": "Panchayat",
+      "phone_office": "1234567890",
+      "local_body_name": "rtgrtg",
+      "email": "gbr@gmail.com",
+      "longitude": 44,
+      "latitude": 33,
+      "facility_type": "mosque",
+      "class_date": "2026-05-08",
+      "class_time": "10:47",
+      "faculty_name": "efvsf",
+      "faculty_number": "1234567890",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "coordinator_name": "wwr",
+      "convener_name": "dfvfefveee",
+      "nfe_convener_name": "rgerw"
+    }
+  },
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "zone_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "AAJM",
+      "place": "gwerewg",
+      "post": "regtr",
+      "pin": "43",
+      "state_name": "errg",
+      "local_body_type": "Panchayat",
+      "phone_office": "1234567890",
+      "local_body_name": "rtgrtg",
+      "email": "gbr@gmail.com",
+      "longitude": 44,
+      "latitude": 33,
+      "facility_type": "mosque",
+      "class_date": "2026-05-08",
+      "class_time": "10:47",
+      "faculty_name": "efvsf",
+      "faculty_number": "1234567890",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "coordinator_name": "wwr",
+      "convener_name": "dfvfefveee",
+      "nfe_convener_name": "rgerw"
+    }
+  },
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "unit_id"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "name": "AAJM",
+      "place": "gwerewg",
+      "post": "regtr",
+      "pin": "43",
+      "state_name": "errg",
+      "local_body_type": "Panchayat",
+      "phone_office": "1234567890",
+      "local_body_name": "rtgrtg",
+      "email": "gbr@gmail.com",
+      "longitude": 44,
+      "latitude": 33,
+      "facility_type": "mosque",
+      "class_date": "2026-05-08",
+      "class_time": "10:47",
+      "faculty_name": "efvsf",
+      "faculty_number": "1234567890",
+      "coordinator_number": "1234567890",
+      "convener_number": "1234567890",
+      "nfe_convener_number": "1234567890",
+      "coordinator_name": "wwr",
+      "convener_name": "dfvfefveee",
+      "nfe_convener_name": "rgerw"
+    }
+  }
+]
+Body:
+{"country":"India","name":"AAJM","place":"gwerewg","post":"regtr","pin":"43","state_name":"errg","local_body_type":"Panchayat","phone_office":"1234567890","local_body_name":"rtgrtg","email":"gbr@gmail.com","longitude":44,"latitude":33,"facility_type":"mosque","class_date":"2026-05-08","class_time":"10:47","faculty_name":"efvsf","faculty_number":"1234567890","coordinator_number":"1234567890","convener_number":"1234567890","nfe_convener_number":"1234567890","coordinator_name":"wwr","convener_name":"dfvfefveee","nfe_convener_name":"rgerw"}
+---
+Validation error on POST http://localhost:8000/unit/faculty:
+[
+  {
+    "type": "missing",
+    "loc": [
+      "body",
+      "center_ids"
+    ],
+    "msg": "Field required",
+    "input": {
+      "country": "India",
+      "email": "fac@qhls.com",
+      "password": "123",
+      "name": "new",
+      "phone": "1234567890",
+      "center_id": 2
+    }
+  }
+]
+Body:
+{"country":"India","email":"fac@qhls.com","password":"123","name":"new","phone":"1234567890","center_id":2}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---
+Validation error on POST http://localhost:8000/admin/users:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": ""
+  }
+]
+Body:
+{"email":"state@qhls.com","password":"state123","role":"state","district_id":"","district_name":"","district_code":"","name":"state"}
+---
+Validation error on POST http://localhost:8000/admin/users:
+[
+  {
+    "type": "int_parsing",
+    "loc": [
+      "body",
+      "district_id"
+    ],
+    "msg": "Input should be a valid integer, unable to parse string as an integer",
+    "input": ""
+  }
+]
+Body:
+{"email":"state@qhls.com","password":"state123","name":"state","role":"state","district_id":"","district_name":"","district_code":""}
+---
+Validation error on POST http://localhost:8000/auth/refresh:
+[
+  {
+    "type": "string_type",
+    "loc": [
+      "body",
+      "refresh_token"
+    ],
+    "msg": "Input should be a valid string",
+    "input": null
+  }
+]
+Body:
+{"refresh_token":null}
+---

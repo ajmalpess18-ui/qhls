@@ -58,5 +58,5 @@ class Center(Base):
     district   = relationship("District", foreign_keys=[district_id])
     zone       = relationship("Zone",     foreign_keys=[zone_id])
     students   = relationship("Student",  back_populates="center")
-    faculties  = relationship("Faculty",  back_populates="center")
+    faculties  = relationship("Faculty",  secondary="faculty_centers", back_populates="centers")
     submission = relationship("CenterSubmission", back_populates="center", uselist=False)

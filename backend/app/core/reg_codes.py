@@ -63,8 +63,8 @@ def get_district_number(state_name: str, district_name: str) -> int:
 def generate_reg_code(db: Session, state_name: str, district_name: str, unit_name: str = None, year: int = None) -> str:
     """
     Generate a unique registration code
-    Format: STATECD/UNITCD/YEAR-STUDENTNUM
-    Example: KR0101/0001/2026-0001
+    Format: STATECDDISTRICTCD/STUDENTNUM/YEAR
+    Example: KR01/0001/2026
     """
     if year is None:
         year = datetime.now().year
@@ -72,31 +72,21 @@ def generate_reg_code(db: Session, state_name: str, district_name: str, unit_nam
     state_code = get_state_code(state_name)
     district_num = get_district_number(state_name, district_name)
     
-    # Get next student number for this unit and year
     # Format: STATECD+DISTRICTCD = 4 chars (e.g., KR01)
-    # Unit code: 2 digits (01-99)
     prefix = f"{state_code}{district_num:02d}"
-    
-    # If unit specified, add unit code (default 01 if not specified)
-    unit_code = "01"  # Default unit code
-    if unit_name:
-        # You can enhance this to get actual unit number
-        unit_code = "01"
-    
-    full_prefix = f"{prefix}{unit_code}"
     
     # Query existing codes with this prefix and year
     existing_codes = db.query(User).filter(
-        User.reg_code.like(f"{full_prefix}/%/{year}%")
+        User.reg_code.like(f"{prefix}/%/{year}")
     ).all()
     
     # Extract student numbers from existing codes
     student_numbers = []
     for user in existing_codes:
         if user.reg_code:
-            # Extract the number part after year- in format: KR0101/0001/2026-0001
-            parts = user.reg_code.split('-')
-            if len(parts) == 2:
+            # Extract the number part: KR01/0001/2026 -> 0001
+            parts = user.reg_code.split('/')
+            if len(parts) == 3:
                 try:
                     num = int(parts[1])
                     student_numbers.append(num)
@@ -107,9 +97,7 @@ def generate_reg_code(db: Session, state_name: str, district_name: str, unit_nam
     next_student_num = max(student_numbers) + 1 if student_numbers else 1
     
     # Generate registration code
-    reg_code = f"{full_prefix}/{next_student_num:04d}/{year}-{next_student_num:04d}"
-    
-    return reg_code
+    reg_code = f"{prefix}/{next_student_num:04d}/{year}"
     
     return reg_code
 
@@ -117,17 +105,14 @@ def generate_reg_code(db: Session, state_name: str, district_name: str, unit_nam
 def parse_reg_code(reg_code: str) -> dict:
     """Parse registration code and return its components"""
     try:
-        # Format: KR01/0001/2026-0001
+        # Format: KR01/0001/2026
         parts = reg_code.split('/')
         if len(parts) != 3:
             raise ValueError("Invalid format")
         
         state_district = parts[0]  # KR01
         student_num = parts[1]      # 0001
-        year_and_num = parts[2]     # 2026-0001
-        
-        year_num_parts = year_and_num.split('-')
-        year = int(year_num_parts[0])
+        year = int(parts[2])        # 2026
         
         state_code = state_district[:2]
         district_num = int(state_district[2:])

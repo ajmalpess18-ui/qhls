@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Building2, Users, MapPin, ClipboardList, Plus, X, CheckCircle, XCircle, Trash2, Upload, FileText, BookOpen, Megaphone } from 'lucide-react';
-
+import { Building2, Users, MapPin, ClipboardList, Plus, X, CheckCircle, XCircle, Trash2, Upload, FileText, BookOpen, Megaphone, Menu } from 'lucide-react';
 function StatCard({ icon: Icon, value, label }) {
   return (
     <div className="stat-card">
@@ -18,6 +17,7 @@ const statusBadge = { NEW: 'badge-blue', IN_LIST: 'badge-yellow', APPROVED: 'bad
 export default function StateDashboard() {
   const { user } = useAuth();
   const [tab, setTab]             = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats]         = useState({});
   const [districts, setDistricts] = useState([]);
   const [submissions, setSubmissions] = useState([]);
@@ -32,6 +32,13 @@ export default function StateDashboard() {
   const [csvFile, setCsvFile]     = useState(null);
   const [pdfFile, setPdfFile]     = useState(null);
 
+  // Drill-down states
+  const [hierarchy, setHierarchy] = useState([]);
+  const [selDistrict, setSelDistrict] = useState(null);
+  const [selZone, setSelZone] = useState(null);
+  const [selUnit, setSelUnit] = useState(null);
+  const [unitStudents, setUnitStudents] = useState([]);
+
   useEffect(() => { loadTab(); }, [tab]);
 
   const loadTab = async () => {
@@ -41,7 +48,17 @@ export default function StateDashboard() {
       if (tab === 'submissions') { const r = await api.get('/state/submissions'); setSubmissions(r.data); }
       if (tab === 'materials')  { const r = await api.get('/state/materials'); setMaterials(r.data); }
       if (tab === 'announcements') { const r = await api.get('/state/announcements'); setAnnouncements(r.data); }
+      if (tab === 'results') { const r = await api.get('/state/hierarchy'); setHierarchy(r.data); }
     } catch {}
+  };
+
+  const loadUnitStudents = async (unit_id) => {
+    try {
+      const r = await api.get(`/state/units/${unit_id}/students`);
+      setUnitStudents(r.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const openModal = (type, extra = {}) => { setModalType(type); setForm(extra); setError(''); setShowModal(true); };
@@ -95,10 +112,16 @@ export default function StateDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">
@@ -164,39 +187,91 @@ export default function StateDashboard() {
             <div>
               <div className="page-header">
                 <h2>Upload Results</h2>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button className={`btn btn-sm ${uploadMode==='manual' ? 'btn-primary':'btn-outline'}`} onClick={() => setUploadMode('manual')}>Manual Entry</button>
-                  <button className={`btn btn-sm ${uploadMode==='csv' ? 'btn-primary':'btn-outline'}`} onClick={() => setUploadMode('csv')}>CSV Upload</button>
-                </div>
               </div>
-              {uploadMode === 'manual' ? (
-                <div className="card" style={{ maxWidth: '500px' }}>
-                  <form onSubmit={handleResultManual}>
-                    {error && <div className="alert alert-error">{error}</div>}
-                    {['student_id','exam_name','subject','marks','total_marks','grade'].map(f => (
-                      <div className="form-group" key={f}>
-                        <label className="form-label">{f.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</label>
-                        <input className="form-input" value={form[f]||''} onChange={e=>setForm({...form,[f]:e.target.value})} required={f!=='grade'} />
-                      </div>
-                    ))}
-                    <button className="btn btn-primary btn-full" type="submit">Save Result</button>
-                  </form>
-                </div>
-              ) : (
-                <div className="card" style={{ maxWidth: '500px' }}>
-                  <form onSubmit={handleResultCSV}>
-                    {error && <div className="alert alert-error">{error}</div>}
-                    <div className="form-group">
-                      <label className="form-label">Exam Name</label>
-                      <input className="form-input" value={form.exam_name||''} onChange={e=>setForm({...form,exam_name:e.target.value})} required />
+              
+              <div className="breadcrumbs" style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', color: 'var(--text-muted)' }}>
+                <span style={{ cursor: 'pointer', color: !selDistrict ? 'var(--text)' : 'inherit', fontWeight: !selDistrict ? '600' : '400' }} onClick={() => {setSelDistrict(null); setSelZone(null); setSelUnit(null);}}>All Districts</span>
+                {selDistrict && <><span>/</span><span style={{ cursor: 'pointer', color: !selZone ? 'var(--text)' : 'inherit', fontWeight: !selZone ? '600' : '400' }} onClick={() => {setSelZone(null); setSelUnit(null);}}>{selDistrict.name}</span></>}
+                {selZone && <><span>/</span><span style={{ cursor: 'pointer', color: !selUnit ? 'var(--text)' : 'inherit', fontWeight: !selUnit ? '600' : '400' }} onClick={() => setSelUnit(null)}>{selZone.name}</span></>}
+                {selUnit && <><span>/</span><span style={{ color: 'var(--text)', fontWeight: '600' }}>{selUnit.name}</span></>}
+              </div>
+
+              {!selDistrict && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {hierarchy.map(d => (
+                    <div key={d.id} className="card" style={{ cursor: 'pointer', padding: '1.25rem', textAlign: 'center', transition: 'all 0.2s', border: '1px solid transparent' }} 
+                         onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                         onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                         onClick={() => setSelDistrict(d)}>
+                      <MapPin size={24} style={{ color: 'var(--primary)', margin: '0 auto 0.5rem auto' }} />
+                      <div style={{ fontWeight: '600' }}>{d.name}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{d.zones?.length || 0} Zones</div>
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">CSV File (reg_number, subject, marks, total_marks, grade)</label>
-                      <input className="form-input" type="file" accept=".csv" onChange={e=>setCsvFile(e.target.files[0])} required />
-                    </div>
-                    <button className="btn btn-primary btn-full" type="submit"><Upload size={15} /> Upload CSV</button>
-                  </form>
+                  ))}
+                  {hierarchy.length === 0 && <div className="empty-state" style={{ gridColumn: '1 / -1' }}><p>No hierarchy data available.</p></div>}
                 </div>
+              )}
+
+              {selDistrict && !selZone && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {selDistrict.zones.map(z => (
+                    <div key={z.id} className="card" style={{ cursor: 'pointer', padding: '1.25rem', textAlign: 'center', transition: 'all 0.2s', border: '1px solid transparent' }}
+                         onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                         onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                         onClick={() => setSelZone(z)}>
+                      <MapPin size={24} style={{ color: 'var(--green)', margin: '0 auto 0.5rem auto' }} />
+                      <div style={{ fontWeight: '600' }}>{z.name}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>{z.units?.length || 0} Units</div>
+                    </div>
+                  ))}
+                  {(!selDistrict.zones || selDistrict.zones.length === 0) && <div className="empty-state" style={{ gridColumn: '1 / -1' }}><p>No zones in this district.</p></div>}
+                </div>
+              )}
+
+              {selZone && !selUnit && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                  {selZone.units.map(u => (
+                    <div key={u.id} className="card" style={{ cursor: 'pointer', padding: '1.25rem', textAlign: 'center', transition: 'all 0.2s', border: '1px solid transparent' }}
+                         onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                         onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}
+                         onClick={() => { setSelUnit(u); loadUnitStudents(u.id); }}>
+                      <Building2 size={24} style={{ color: 'var(--blue)', margin: '0 auto 0.5rem auto' }} />
+                      <div style={{ fontWeight: '600' }}>{u.name}</div>
+                    </div>
+                  ))}
+                  {(!selZone.units || selZone.units.length === 0) && <div className="empty-state" style={{ gridColumn: '1 / -1' }}><p>No units in this zone.</p></div>}
+                </div>
+              )}
+
+              {selUnit && (
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ margin: 0 }}>Students in {selUnit.name}</h3>
+                    <button className="btn btn-primary" onClick={() => openModal('csv_mark', { unit_id: selUnit.id })}>
+                      <Upload size={15} /> Bulk CSV Upload
+                    </button>
+                  </div>
+                  <div className="table-wrap">
+                    <table>
+                      <thead><tr><th>Name</th><th>Reg. No.</th><th>Center</th><th>Action</th></tr></thead>
+                      <tbody>
+                        {unitStudents.map(s => (
+                          <tr key={s.id}>
+                            <td>{s.name}</td>
+                            <td><strong>{s.reg_number}</strong></td>
+                            <td>{s.center}</td>
+                            <td>
+                              <button className="btn btn-outline btn-sm" onClick={() => openModal('manual_mark', { student_id: s.id })}>
+                                Add Mark
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {unitStudents.length === 0 && <div className="empty-state" style={{ padding: '2rem' }}><p>No students found in this unit.</p></div>}
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -259,6 +334,8 @@ export default function StateDashboard() {
                 {modalType==='review' && 'Review Submission'}
                 {modalType==='material' && 'Upload Study Material'}
                 {modalType==='announcement' && 'New Announcement'}
+                {modalType==='manual_mark' && 'Add Manual Mark'}
+                {modalType==='csv_mark' && 'Bulk CSV Upload'}
               </h3>
               <button onClick={closeModal} style={{background:'none',border:'none',cursor:'pointer'}}><X size={20}/></button>
             </div>
@@ -292,6 +369,45 @@ export default function StateDashboard() {
                     <button className="btn btn-outline btn-sm" onClick={()=>handleReview('REMOVED')}><Trash2 size={14}/> Remove</button>
                   </div>
                 </div>
+              )}
+
+              {modalType === 'manual_mark' && (
+                <form onSubmit={handleResultManual}>
+                  {['student_id','exam_name','subject','marks','total_marks','grade'].map(f => (
+                    <div className="form-group" key={f}>
+                      <label className="form-label">{f.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())}</label>
+                      <input 
+                        className="form-input" 
+                        value={form[f]||''} 
+                        onChange={e=>setForm({...form,[f]:e.target.value})} 
+                        required={f!=='grade'}
+                        disabled={f==='student_id'} 
+                      />
+                    </div>
+                  ))}
+                  <div className="modal-footer" style={{padding:0,marginTop:'1rem'}}>
+                    <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">Save Result</button>
+                  </div>
+                </form>
+              )}
+
+              {modalType === 'csv_mark' && (
+                <form onSubmit={handleResultCSV}>
+                  <div className="form-group">
+                    <label className="form-label">Exam Name</label>
+                    <input className="form-input" value={form.exam_name||''} onChange={e=>setForm({...form,exam_name:e.target.value})} required />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">CSV File</label>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Columns required: reg_number, subject, marks, total_marks, grade</div>
+                    <input className="form-input" type="file" accept=".csv" onChange={e=>setCsvFile(e.target.files[0])} required />
+                  </div>
+                  <div className="modal-footer" style={{padding:0,marginTop:'1rem'}}>
+                    <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
+                    <button type="submit" className="btn btn-primary"><Upload size={15}/> Upload CSV</button>
+                  </div>
+                </form>
               )}
 
               {modalType === 'material' && (

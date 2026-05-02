@@ -61,9 +61,9 @@ class UnitOut(BaseModel):
 # ── Center schemas ──────────────────────────────────────────────────────────────
 class CenterCreate(BaseModel):
     name: str
-    district_id: int
-    zone_id: int
-    unit_id: int
+    district_id: Optional[int] = None
+    zone_id: Optional[int] = None
+    unit_id: Optional[int] = None
     place: str
     post: str
     pin: str
@@ -102,6 +102,14 @@ class StudentCreate(BaseModel):
     center_id: int
     class_name: Optional[str] = None
 
+class StudentUpdate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    password: Optional[str] = None
+    center_id: int
+    class_name: Optional[str] = None
+
 
 class StudentOut(BaseModel):
     id: int
@@ -119,13 +127,20 @@ class FacultyCreate(BaseModel):
     email: EmailStr
     phone: str
     password: str
-    center_id: int
+    center_ids: List[int]
+
+class FacultyUpdate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    password: Optional[str] = None
+    center_ids: List[int]
 
 
 class FacultyOut(BaseModel):
     id: int
     user_id: int
-    center_id: int
+    center_ids: List[int] = []
     unit_id: int
     class Config: from_attributes = True
 

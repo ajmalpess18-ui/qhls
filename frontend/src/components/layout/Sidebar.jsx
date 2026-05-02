@@ -63,7 +63,7 @@ const roleLabels = {
   unit: 'Unit Admin', faculty: 'Faculty', student: 'Student',
 };
 
-export default function Sidebar({ activeTab, setActiveTab }) {
+export default function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const items = navConfig[user?.role] || [];
@@ -73,8 +73,13 @@ export default function Sidebar({ activeTab, setActiveTab }) {
     navigate('/');
   };
 
+  const handleNavClick = (tab) => {
+    setActiveTab(tab);
+    if (setIsOpen) setIsOpen(false);
+  };
+
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
         <div className="logo-icon">Q</div>
         <div>
@@ -88,7 +93,7 @@ export default function Sidebar({ activeTab, setActiveTab }) {
           <div
             key={tab}
             className={`nav-item ${activeTab === tab ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab)}
+            onClick={() => handleNavClick(tab)}
           >
             <Icon size={17} />
             <span>{label}</span>

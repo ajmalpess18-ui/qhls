@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Building2, Users, Plus, X, MapPin, CalendarCheck } from 'lucide-react';
-
+import { Building2, Users, Plus, X, MapPin, CalendarCheck, Menu } from 'lucide-react';
 function StatCard({ icon: Icon, value, label }) {
   return (
     <div className="stat-card">
@@ -26,6 +25,7 @@ const FACILITY_TYPES = [
 export default function UnitDashboard() {
   const { user } = useAuth();
   const [tab, setTab]           = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats]       = useState({});
   const [centers, setCenters]   = useState([]);
   const [students, setStudents] = useState([]);
@@ -44,8 +44,14 @@ export default function UnitDashboard() {
     try {
       if (tab === 'dashboard')   { const r = await api.get('/unit/stats');       setStats(r.data); }
       if (tab === 'centers')     { const r = await api.get('/unit/centers');     setCenters(r.data); }
-      if (tab === 'students')    { const r = await api.get('/unit/students');    setStudents(r.data); }
-      if (tab === 'faculty')     { const r = await api.get('/unit/faculty');     setFaculty(r.data); }
+      if (tab === 'students')    { 
+        const [r1, r2] = await Promise.all([api.get('/unit/students'), api.get('/unit/centers')]);
+        setStudents(r1.data); setCenters(r2.data);
+      }
+      if (tab === 'faculty')     { 
+        const [r1, r2] = await Promise.all([api.get('/unit/faculty'), api.get('/unit/centers')]);
+        setFaculty(r1.data); setCenters(r2.data);
+      }
       if (tab === 'submissions') { const r = await api.get('/unit/submissions'); setSubs(r.data); }
       if (tab === 'attendance')  { const r = await api.get('/unit/students');    setStudents(r.data); }
     } catch {}
@@ -56,20 +62,60 @@ export default function UnitDashboard() {
 
   const handleCenter = async (e) => {
     e.preventDefault(); setError('');
-    try { await api.post('/unit/centers', { ...form, name: (form.name || '').toUpperCase() }); closeModal(); loadTab(); }
+    try { 
+      await api.post('/unit/centers', { 
+        ...form, 
+        name: (form.name || '').toUpperCase(),
+        district_id: user.district_id,
+        zone_id: user.zone_id,
+        unit_id: user.unit_id
+      }); 
+      closeModal(); 
+      loadTab(); 
+    }
     catch (err) { setError(err.response?.data?.detail || 'Error creating center'); }
   };
 
   const handleStudent = async (e) => {
     e.preventDefault(); setError('');
-    try { await api.post('/unit/students', form); closeModal(); loadTab(); }
+    try { 
+      if (form.id) {
+        await api.put(`/unit/students/${form.id}`, form);
+      } else {
+        await api.post('/unit/students', form); 
+      }
+      closeModal(); loadTab(); 
+    }
     catch (err) { setError(err.response?.data?.detail || 'Error'); }
   };
 
   const handleFaculty = async (e) => {
     e.preventDefault(); setError('');
-    try { await api.post('/unit/faculty', form); closeModal(); loadTab(); }
+    if (!form.center_ids || form.center_ids.length === 0) {
+      setError('Please select at least one center.');
+      return;
+    }
+    try { 
+      if (form.id) {
+        await api.put(`/unit/faculty/${form.id}`, form);
+      } else {
+        await api.post('/unit/faculty', form); 
+      }
+      closeModal(); loadTab(); 
+    }
     catch (err) { setError(err.response?.data?.detail || 'Error'); }
+  };
+
+  const deleteStudent = async (id) => {
+    if(!window.confirm("Delete this student?")) return;
+    try { await api.delete(`/unit/students/${id}`); loadTab(); }
+    catch (err) { alert("Error deleting student"); }
+  };
+
+  const deleteFaculty = async (id) => {
+    if(!window.confirm("Delete this faculty?")) return;
+    try { await api.delete(`/unit/faculty/${id}`); loadTab(); }
+    catch (err) { alert("Error deleting faculty"); }
   };
 
   const toggleAtt = (studentId, status) => {
@@ -91,10 +137,16 @@ export default function UnitDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">
@@ -144,7 +196,7 @@ export default function UnitDashboard() {
               </div>
               <div className="table-wrap">
                 <table>
-                  <thead><tr><th>Name</th><th>Reg. No.</th><th>Center</th><th>Class</th></tr></thead>
+                  <thead><tr><th>Name</th><th>Reg. No.</th><th>Center</th><th>Class</th><th>Actions</th></tr></thead>
                   <tbody>
                     {students.map(s => (
                       <tr key={s.id}>
@@ -152,6 +204,10 @@ export default function UnitDashboard() {
                         <td><strong>{s.reg_number}</strong></td>
                         <td>{s.center}</td>
                         <td>{s.class_name || '—'}</td>
+                        <td style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => openModal('student', { ...s, password: '' })}>Edit</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteStudent(s.id)}>Delete</button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -168,10 +224,19 @@ export default function UnitDashboard() {
               </div>
               <div className="table-wrap">
                 <table>
-                  <thead><tr><th>Name</th><th>Email</th><th>Center</th></tr></thead>
+                  <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Center</th><th>Actions</th></tr></thead>
                   <tbody>
                     {faculty.map(f => (
-                      <tr key={f.id}><td>{f.name}</td><td>{f.email}</td><td>{f.center}</td></tr>
+                      <tr key={f.id}>
+                        <td>{f.name}</td>
+                        <td>{f.email}</td>
+                        <td>{f.phone}</td>
+                        <td>{f.center}</td>
+                        <td style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button className="btn btn-outline btn-sm" onClick={() => openModal('faculty', { ...f, password: '' })}>Edit</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => deleteFaculty(f.id)}>Delete</button>
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -261,21 +326,9 @@ export default function UnitDashboard() {
                   {/* Basic */}
                   <div className="form-section-title">📌 Basic Information</div>
                   <div className="form-grid-2">
-                    <div className="form-group">
+                    <div className="form-group" style={{ gridColumn: '1 / -1' }}>
                       <label className="form-label">Center Name (UPPERCASE)</label>
                       <input className="form-input" value={f('name')} onChange={e=>set('name',e.target.value.toUpperCase())} required placeholder="CENTER NAME" />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Center ID (District)</label>
-                      <input className="form-input" type="number" value={f('district_id')} onChange={e=>set('district_id',parseInt(e.target.value))} required />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Zone ID</label>
-                      <input className="form-input" type="number" value={f('zone_id')} onChange={e=>set('zone_id',parseInt(e.target.value))} required />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Unit ID</label>
-                      <input className="form-input" type="number" value={f('unit_id')} onChange={e=>set('unit_id',parseInt(e.target.value))} required />
                     </div>
                   </div>
 
@@ -345,12 +398,21 @@ export default function UnitDashboard() {
                   <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={f('name')} onChange={e=>set('name',e.target.value)} required /></div>
                   <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={f('email')} onChange={e=>set('email',e.target.value)} required /></div>
                   <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" type="tel" value={f('phone')} onChange={e=>set('phone',e.target.value)} required /></div>
-                  <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" value={f('password')} onChange={e=>set('password',e.target.value)} required /></div>
-                  <div className="form-group"><label className="form-label">Center ID</label><input className="form-input" type="number" value={f('center_id')} onChange={e=>set('center_id',parseInt(e.target.value))} required /></div>
+                  <div className="form-group">
+                    <label className="form-label">Password {form.id && <span style={{fontSize:'0.8rem',color:'#666'}}>(Leave blank to keep unchanged)</span>}</label>
+                    <input className="form-input" type="password" value={f('password')} onChange={e=>set('password',e.target.value)} required={!form.id} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Center</label>
+                    <select className="form-select" value={f('center_id')} onChange={e=>set('center_id',parseInt(e.target.value))} required>
+                      <option value="">Select Center</option>
+                      {centers.filter(c => c.submission_status === 'APPROVED').map(c => <option key={c.id} value={c.id}>{c.name} ({c.place})</option>)}
+                    </select>
+                  </div>
                   <div className="form-group"><label className="form-label">Class</label><input className="form-input" placeholder="e.g. Class 1" value={f('class_name')} onChange={e=>set('class_name',e.target.value)} /></div>
                   <div className="modal-footer" style={{padding:0,marginTop:'1rem'}}>
                     <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
-                    <button type="submit" className="btn btn-primary">Add Student</button>
+                    <button type="submit" className="btn btn-primary">{form.id ? 'Save Changes' : 'Add Student'}</button>
                   </div>
                 </form>
               )}
@@ -361,8 +423,30 @@ export default function UnitDashboard() {
                   <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" value={f('name')} onChange={e=>set('name',e.target.value)} required /></div>
                   <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={f('email')} onChange={e=>set('email',e.target.value)} required /></div>
                   <div className="form-group"><label className="form-label">Phone Number</label><input className="form-input" type="tel" value={f('phone')} onChange={e=>set('phone',e.target.value)} required /></div>
-                  <div className="form-group"><label className="form-label">Password</label><input className="form-input" type="password" value={f('password')} onChange={e=>set('password',e.target.value)} required /></div>
-                  <div className="form-group"><label className="form-label">Center ID</label><input className="form-input" type="number" value={f('center_id')} onChange={e=>set('center_id',parseInt(e.target.value))} required /></div>
+                  <div className="form-group">
+                    <label className="form-label">Password {form.id && <span style={{fontSize:'0.8rem',color:'#666'}}>(Leave blank to keep unchanged)</span>}</label>
+                    <input className="form-input" type="password" value={f('password')} onChange={e=>set('password',e.target.value)} required={!form.id} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Assign Centers</label>
+                    <div style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid var(--border)', padding: '0.5rem', borderRadius: 'var(--radius)' }}>
+                      {centers.filter(c => c.submission_status === 'APPROVED').map(c => (
+                        <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={(form.center_ids || []).includes(c.id)}
+                            onChange={(e) => {
+                              const curr = form.center_ids || [];
+                              if (e.target.checked) set('center_ids', [...curr, c.id]);
+                              else set('center_ids', curr.filter(id => id !== c.id));
+                            }}
+                          />
+                          {c.name} ({c.place})
+                        </label>
+                      ))}
+                      {centers.filter(c => c.submission_status === 'APPROVED').length === 0 && <span style={{ opacity: 0.6 }}>No approved centers available</span>}
+                    </div>
+                  </div>
                   <div className="modal-footer" style={{padding:0,marginTop:'1rem'}}>
                     <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
                     <button type="submit" className="btn btn-primary">Add Faculty</button>

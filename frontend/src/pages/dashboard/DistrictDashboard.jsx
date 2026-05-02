@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { MapPin, Building2, Users, Plus, X, Pencil, Trash2, ToggleLeft } from 'lucide-react';
-
+import { MapPin, Building2, Users, Plus, X, Pencil, Trash2, ToggleLeft, Menu } from 'lucide-react';
 function StatCard({ icon: Icon, value, label }) {
   return (
     <div className="stat-card">
@@ -21,6 +20,7 @@ const statusBadge = {
 export default function DistrictDashboard() {
   const { user } = useAuth();
   const [tab, setTab]         = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats]     = useState({});
   const [zones, setZones]     = useState([]);
   const [units, setUnits]     = useState([]);
@@ -130,16 +130,33 @@ export default function DistrictDashboard() {
       setShowModal(false);
       loadTab();
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error');
+      const detail = err.response?.data?.detail;
+      let errMsg = 'An error occurred';
+      if (typeof detail === 'string') {
+        errMsg = detail;
+      } else if (Array.isArray(detail)) {
+        errMsg = detail.map(d => d.msg).join(', ');
+      } else if (detail) {
+        errMsg = JSON.stringify(detail);
+      } else if (err.message) {
+        errMsg = err.message;
+      }
+      setError(errMsg);
     }
   };
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">
@@ -162,7 +179,7 @@ export default function DistrictDashboard() {
             <>
               <div className="page-header">
                 <h2>Zones</h2>
-                <button className="btn btn-primary btn-sm" onClick={openZoneModal}>
+                <button className="btn btn-primary btn-sm" onClick={() => openZoneModal()}>
                   <Plus size={15} /> Add Zone
                 </button>
               </div>
@@ -238,7 +255,7 @@ export default function DistrictDashboard() {
                       <tr key={u.id}>
                         <td>{u.name}</td>
                         <td>{u.email}</td>
-                        <td>{u.zone_id ?? '—'}</td>
+                        <td>{zones.find(z => z.id === u.zone_id)?.name || u.zone_id || '—'}</td>
                         <td>
                           <span className={`badge ${u.is_active ? 'badge-green' : 'badge-red'}`}>
                             {u.is_active ? 'Active' : 'Inactive'}

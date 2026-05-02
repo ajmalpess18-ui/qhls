@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { Building2, Users, MapPin, Plus, X, Pencil, Trash2, ToggleLeft } from 'lucide-react';
-
+import { Building2, Users, MapPin, Plus, X, Pencil, Trash2, ToggleLeft, Menu } from 'lucide-react';
 function StatCard({ icon: Icon, value, label }) {
   return (
     <div className="stat-card">
@@ -18,6 +17,7 @@ const statusBadge = { NEW:'badge-blue', IN_LIST:'badge-yellow', APPROVED:'badge-
 export default function ZoneDashboard() {
   const { user } = useAuth();
   const [tab, setTab]     = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState({});
   const [units, setUnits] = useState([]);
   const [subs, setSubs]   = useState([]);
@@ -116,10 +116,16 @@ export default function ZoneDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">
@@ -180,14 +186,14 @@ export default function ZoneDashboard() {
               <div className="table-wrap">
                 <table>
                   <thead>
-                    <tr><th>Name</th><th>Email</th><th>Unit ID</th><th>Status</th><th>Action</th></tr>
+                    <tr><th>Name</th><th>Email</th><th>Unit</th><th>Status</th><th>Action</th></tr>
                   </thead>
                   <tbody>
                     {users.map(u => (
                       <tr key={u.id}>
                         <td>{u.name}</td>
                         <td>{u.email}</td>
-                        <td>{u.unit_id ?? '—'}</td>
+                        <td>{units.find(un => un.id === u.unit_id)?.name || u.unit_id || '—'}</td>
                         <td>
                           <span className={`badge ${u.is_active ? 'badge-green' : 'badge-red'}`}>
                             {u.is_active ? 'Active' : 'Inactive'}

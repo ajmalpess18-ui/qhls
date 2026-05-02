@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../services/api';
-import { MapPin, Users, BarChart2, Plus, X, ToggleLeft, Building2, Pencil, Trash2 } from 'lucide-react';
-
+import { MapPin, Users, BarChart2, Plus, X, ToggleLeft, Building2, Pencil, Trash2, Menu } from 'lucide-react';
 function StatCard({ icon: Icon, value, label, color = '#6c63ff' }) {
   return (
     <div className="stat-card">
@@ -19,6 +18,7 @@ function StatCard({ icon: Icon, value, label, color = '#6c63ff' }) {
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [tab, setTab]           = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats]       = useState({});
   const [states, setStates]     = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -45,12 +45,14 @@ export default function AdminDashboard() {
         setDistricts(data);
       }
       if (tab === 'users') {
-        const [usersRes, distRes] = await Promise.all([
+        const [usersRes, distRes, statesRes] = await Promise.all([
           api.get('/admin/users'),
           api.get('/admin/districts'),
+          api.get('/admin/states'),
         ]);
         setUsers(usersRes.data);
         setDistricts(distRes.data);
+        setStates(statesRes.data);
       }
     } catch {}
   };
@@ -60,9 +62,10 @@ export default function AdminDashboard() {
     setForm(existingData || {});
     setError('');
     setShowModal(true);
-    // Pre-load districts when opening user modal
-    if ((type === 'user' || type === 'edit_user') && districts.length === 0) {
-      api.get('/admin/districts').then(r => setDistricts(r.data)).catch(() => {});
+    // Pre-load districts and states when opening user modal
+    if ((type === 'user' || type === 'edit_user')) {
+      if (districts.length === 0) api.get('/admin/districts').then(r => setDistricts(r.data)).catch(() => {});
+      if (states.length === 0) api.get('/admin/states').then(r => setStates(r.data)).catch(() => {});
     }
   };
   const closeModal = () => setShowModal(false);
@@ -96,17 +99,31 @@ export default function AdminDashboard() {
         await api.put(`/admin/states/${form.id}`, { name: form.name });
       } else if (modalType === 'edit_user') {
         const payload = { ...form };
-        if (payload.role === 'district') payload.district_id = parseInt(payload.district_id);
+        if (payload.role === 'district') {
+          payload.district_id = parseInt(payload.district_id);
+          delete payload.state_id;
+        } else if (payload.role === 'state') {
+          payload.state_id = parseInt(payload.state_id);
+          delete payload.district_id;
+        } else {
+          delete payload.district_id;
+          delete payload.state_id;
+        }
         await api.put(`/admin/users/${form.id}`, payload);
       } else {
-        // Build payload — district admin must have district_id
+        // Build payload
         const payload = { ...form };
         if (payload.role === 'district') {
-          if (!payload.district_id) {
-            setError('Please select a district for this admin.');
-            return;
-          }
+          if (!payload.district_id) return setError('Please select a district for this admin.');
           payload.district_id = parseInt(payload.district_id);
+          delete payload.state_id;
+        } else if (payload.role === 'state') {
+          if (!payload.state_id) return setError('Please select a state for this admin.');
+          payload.state_id = parseInt(payload.state_id);
+          delete payload.district_id;
+        } else {
+          delete payload.district_id;
+          delete payload.state_id;
         }
         await api.post('/admin/users', payload);
       }
@@ -124,10 +141,16 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <Sidebar activeTab={tab} setActiveTab={setTab} />
+      <Sidebar activeTab={tab} setActiveTab={setTab} isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={() => setSidebarOpen(false)}></div>
       <div className="main-content">
         <div className="topbar">
-          <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <button className="mobile-menu-btn" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="topbar-title">{tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+          </div>
           <span className="topbar-user">👤 {user?.name}</span>
         </div>
         <div className="page-content">
@@ -372,6 +395,26 @@ export default function AdminDashboard() {
                         <option value="unit">Unit</option>
                       </select>
                     </div>
+
+                    {/* Show state picker if role is state */}
+                    {form.role === 'state' && (
+                      <div className="form-group">
+                        <label className="form-label">Assign State</label>
+                        <select
+                          className="form-select"
+                          value={form.state_id || ''}
+                          onChange={e => setForm({ ...form, state_id: e.target.value })}
+                          required
+                        >
+                          <option value="">Select State</option>
+                          {states.map(s => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     {/* Show district picker if role is district and no pre-filled district */}
                     {form.role === 'district' && !form.district_name && (
