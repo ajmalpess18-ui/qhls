@@ -1,0 +1,72 @@
+Validation error on POST http://localhost:8000/zone/users:
+[
+  {
+    "type": "value_error",
+    "loc": [
+      "body",
+      "email"
+    ],
+    "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+    "input": "new@12",
+    "ctx": {
+      "reason": "The part after the @-sign is not valid. It should have a period."
+    }
+  }
+]
+Body:
+{"name":"new12","email":"new@12","password":"123","role":"unit","unit_id":1}
+---
+Validation error on POST http://localhost:8000/zone/users:
+[
+  {
+    "type": "value_error",
+    "loc": [
+      "body",
+      "email"
+    ],
+    "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+    "input": "new@12",
+    "ctx": {
+      "reason": "The part after the @-sign is not valid. It should have a period."
+    }
+  }
+]
+Body:
+{"name":"new12","email":"new@12","password":"123","role":"unit","unit_id":1}
+---
+Validation error on POST http://localhost:8000/zone/users:
+[
+  {
+    "type": "value_error",
+    "loc": [
+      "body",
+      "email"
+    ],
+    "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+    "input": "new@12",
+    "ctx": {
+      "reason": "The part after the @-sign is not valid. It should have a period."
+    }
+  }
+]
+Body:
+{"name":"new12","email":"new@12","password":"123","role":"unit","unit_id":1}
+---
+Validation error on POST http://localhost:8000/zone/users:
+[
+  {
+    "type": "value_error",
+    "loc": [
+      "body",
+      "email"
+    ],
+    "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+    "input": "new@12",
+    "ctx": {
+      "reason": "The part after the @-sign is not valid. It should have a period."
+    }
+  }
+]
+Body:
+{"name":"new12","email":"new@12","password":"123","role":"unit","unit_id":1}
+---
