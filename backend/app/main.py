@@ -69,9 +69,12 @@ from fastapi.responses import FileResponse
 from fastapi import HTTPException
 
 frontend_dist = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/dist"))
+assets_dir = os.path.join(frontend_dist, "assets")
 
 if os.path.exists(frontend_dist):
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+    # Only mount assets if the folder actually exists to prevent RuntimeError
+    if os.path.exists(assets_dir):
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 
     @app.get("/{catchall:path}")
     def serve_react_app(catchall: str):
