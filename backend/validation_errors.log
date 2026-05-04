@@ -617,3 +617,21 @@ Validation error on POST http://localhost:8000/auth/refresh:
 Body:
 {"refresh_token":null}
 ---
+Validation error on POST http://localhost:8000/auth/admin/login:
+[
+  {
+    "type": "value_error",
+    "loc": [
+      "body",
+      "email"
+    ],
+    "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+    "input": "admin@qhls",
+    "ctx": {
+      "reason": "The part after the @-sign is not valid. It should have a period."
+    }
+  }
+]
+Body:
+{"email":"admin@qhls","password":"admin123"}
+---
