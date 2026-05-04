@@ -10,7 +10,8 @@ export default function Downloads() {
   const [loading, setLoading]     = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:8000/public/materials')
+    const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    axios.get(`${baseURL}/public/materials`)
       .then(r => setMaterials(r.data))
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -75,7 +76,7 @@ export default function Downloads() {
                   </div>
                 </div>
                 <a
-                  href={`http://localhost:8000${m.file_url}`}
+                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${m.file_url}`}
                   target="_blank" rel="noreferrer"
                   className="btn btn-primary btn-sm"
                   style={{ flexShrink: 0 }}

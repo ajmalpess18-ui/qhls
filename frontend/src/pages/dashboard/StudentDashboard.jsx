@@ -150,7 +150,7 @@ export default function StudentDashboard() {
                         {m.description && <div style={{ fontSize:'0.82rem', color:'var(--text-muted)' }}>{m.description}</div>}
                         {m.class_name && <span className="badge badge-green" style={{ marginTop:'0.3rem', display:'inline-block' }}>{m.class_name}</span>}
                       </div>
-                      <a href={`http://localhost:8000${m.file_url}`} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+                      <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${m.file_url}`} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
                         <Download size={14}/> Download
                       </a>
                     </div>
