@@ -10,7 +10,7 @@ export default defineConfig([
     files: ['**/*.{js,jsx}'],
     extends: [
       js.configs.recommended,
-      reactHoghjklhgffghjklmnbvcvbnm,mnbvcvbnmbvcvbnmjhgfghjkjhgfhjklkjhgfgnmbvcvbnmhgfghjkjhgfgmngfnmnbvbnm,mnbgfdfghjkkjhgfghhgfgm,mnhgfbnmcn5hgfrrkjhgfghjhgfdghjlkjhgfghjkjhgfdfghjkllkjhgfdfghjklkjherthjkl.,mnbvcxhgfdsdfbn.,mnbm,./.lkjhgjklkjhgfhjklkjhnmmn uilkjuklkjhghjm,./,mnbvbnm,./.,mjnhgfghjkl/lkjhgfhj,./.,mnhgfdfgbn45tyuiop4tyuiop34r5tyuiop[ertyuiopertyjkmnblkjhgoks.configs.flat.recommended,
+      reactHooks.configs.recommended,
       reactRefresh.configs.vite,
     ],
     languageOptions: {
