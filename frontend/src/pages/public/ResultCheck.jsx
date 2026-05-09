@@ -15,7 +15,8 @@ export default function ResultCheck() {
     if (!regNumber.trim()) return;
     setLoading(true); setError(''); setResult(null);
     try {
-      const { data } = await axios.get(`http://localhost:8000/public/result/${regNumber.trim()}`);
+      const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const { data } = await axios.get(`${baseURL}/public/result/${regNumber.trim()}`);
       setResult(data);
     } catch (err) {
       setError(err.response?.data?.detail || 'No record found for this registration number.');
