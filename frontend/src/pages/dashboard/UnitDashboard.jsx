@@ -350,10 +350,6 @@ export default function UnitDashboard() {
                     <div className="form-group"><label className="form-label">Phone (Office)</label><input className="form-input" value={f('phone_office')} onChange={e=>set('phone_office',e.target.value)} required /></div>
                     <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={f('email')} onChange={e=>set('email',e.target.value)} /></div>
                   </div>
-                  <div className="form-grid-2">
-                    <div className="form-group"><label className="form-label">Latitude</label><input className="form-input" type="number" step="any" value={f('latitude')} onChange={e=>set('latitude',parseFloat(e.target.value))} /></div>
-                    <div className="form-group"><label className="form-label">Longitude</label><input className="form-input" type="number" step="any" value={f('longitude')} onChange={e=>set('longitude',parseFloat(e.target.value))} /></div>
-                  </div>
 
                   {/* Facility */}
                   <div className="form-section-title">📌 Physical Facility</div>
@@ -368,7 +364,18 @@ export default function UnitDashboard() {
                   {/* Schedule */}
                   <div className="form-section-title">📌 Schedule</div>
                   <div className="form-grid-2">
-                    <div className="form-group"><label className="form-label">Class Date</label><input className="form-input" type="date" value={f('class_date')} onChange={e=>set('class_date',e.target.value)} /></div>
+                    <div className="form-group">
+                      <label className="form-label">Class Day</label>
+                      <div className="day-picker">
+                        {['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map(day => (
+                          <button key={day} type="button"
+                            className={`day-pill${f('class_day') === day ? ' day-pill--active' : ''}`}
+                            onClick={() => set('class_day', day)}>
+                            {day.slice(0, 3)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="form-group"><label className="form-label">Class Time</label><input className="form-input" type="time" value={f('class_time')} onChange={e=>set('class_time',e.target.value)} /></div>
                   </div>
 
@@ -409,7 +416,24 @@ export default function UnitDashboard() {
                       {centers.filter(c => c.submission_status === 'APPROVED').map(c => <option key={c.id} value={c.id}>{c.name} ({c.place})</option>)}
                     </select>
                   </div>
-                  <div className="form-group"><label className="form-label">Class</label><input className="form-input" placeholder="e.g. Class 1" value={f('class_name')} onChange={e=>set('class_name',e.target.value)} /></div>
+                  <div className="form-grid-2">
+                    <div className="form-group">
+                      <label className="form-label">Age</label>
+                      <input className="form-input" type="number" min="1" max="120" placeholder="e.g. 35" value={f('age')} onChange={e=>set('age', parseInt(e.target.value))} required />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Gender</label>
+                      <div className="day-picker">
+                        {['Male','Female'].map(g => (
+                          <button key={g} type="button"
+                            className={`day-pill${f('gender') === g ? ' day-pill--active' : ''}`}
+                            onClick={() => set('gender', g)}>
+                            {g}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   <div className="modal-footer" style={{padding:0,marginTop:'1rem'}}>
                     <button type="button" className="btn btn-outline" onClick={closeModal}>Cancel</button>
                     <button type="submit" className="btn btn-primary">{form.id ? 'Save Changes' : 'Add Student'}</button>
